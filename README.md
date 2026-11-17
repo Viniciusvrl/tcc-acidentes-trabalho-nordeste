@@ -3,8 +3,8 @@
 Código do Trabalho de Conclusão de Curso "Acidentes de trabalho registrados no Nordeste (CAT/INSS, 2020 a 2025):
 análise descritiva e classificação do tipo de acidente com aprendizado de máquina" (Sistemas de Informação, UNIT).
 
-- **Autor:** Vinícius (preencha o nome completo)
-- **Orientador:** Sergio Roberto Santos Santana
+- **Autor:** Vinícius Rodrigues Lima
+- **Orientador:** Sergio Roberto Santos de Santana
 
 O projeto integra os arquivos abertos de Comunicação de Acidente de Trabalho (CAT) do INSS, monta uma base
 da região Nordeste e compara quatro algoritmos (Regressão Logística, Árvore de Decisão, Random Forest e
