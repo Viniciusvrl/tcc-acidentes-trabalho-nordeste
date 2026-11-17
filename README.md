@@ -1,9 +1,9 @@
-# Análise de padrões de acidentes de trabalho no Nordeste (CAT/INSS, 2020–2025)
+# Acidentes de trabalho registrados no Nordeste (CAT/INSS, 2020 a 2025)
 
-Código do Trabalho de Conclusão de Curso "Análise de padrões de acidentes de trabalho na região Nordeste do
-Brasil utilizando técnicas de aprendizado de máquina" (Sistemas de Informação, UNIT).
+Código do Trabalho de Conclusão de Curso "Acidentes de trabalho registrados no Nordeste (CAT/INSS, 2020 a 2025):
+análise descritiva e classificação do tipo de acidente com aprendizado de máquina" (Sistemas de Informação, UNIT).
 
-- **Autor:** Vinícius Rodrigues Lima
+- **Autor:** Vinícius (preencha o nome completo)
 - **Orientador:** Sergio Roberto Santos Santana
 
 O projeto integra os arquivos abertos de Comunicação de Acidente de Trabalho (CAT) do INSS, monta uma base
@@ -25,25 +25,29 @@ dos acidentes com óbito, além de uma análise descritiva por grupo.
 | `modelos_comparativos.py` | Motor compartilhado pelos scripts de Regressão Logística, Árvore e XGBoost |
 | `comparar_modelos.py` | Tabela e gráficos comparativos dos quatro algoritmos |
 | `analise_descritiva.py` | Proporções por grupo, qui-quadrado e V de Cramér |
+| `analises_complementares.py` | Análises de sensibilidade e tabelas pedidas na revisão: ausência por layout, antes e depois da exclusão, meses regulares, blocos de variáveis, intervalos de confiança e checagem do óbito |
 
 Mantenha todos os scripts na mesma pasta: eles importam uns aos outros.
 
 ## Requisitos
 
-- Python 3
-- Bibliotecas: pandas, numpy, scikit-learn, scipy, matplotlib, pyarrow e xgboost
+- Python 3 (resultados do trabalho gerados com Python 3.14.3)
+- Bibliotecas: pandas, numpy, scipy, scikit-learn, matplotlib, pyarrow e xgboost
 
 ```
 pip install -r requirements.txt
 ```
 
-O `requirements.txt` lista: pandas, numpy, scipy, scikit-learn, matplotlib, pyarrow e xgboost.
+Versões usadas nos resultados do trabalho: pandas 3.0.6, numpy 2.5.3, scipy 1.18.1, scikit-learn 1.9.1,
+matplotlib 3.11.2, xgboost 3.4.1 e pyarrow 26.0.0. Com outras versões, os resultados podem variar na
+terceira casa decimal.
 
 ## Dados de entrada
 
 Os dados são públicos e não estão neste repositório. Baixe os arquivos CSV de Comunicação de Acidente de
-Trabalho de 2020 a 2025 no Portal de Dados Abertos do INSS:
-https://dadosabertos.inss.gov.br/pt_PT/dataset/inss-comunicacao-de-acidente-de-trabalho-cat
+Trabalho de 2020 a 2025 no Portal Brasileiro de Dados Abertos (dados.gov.br), para onde o INSS migrou a publicação:
+https://dados.gov.br/dados/conjuntos-dados/inss-comunicacao-de-acidente-de-trabalho-cat1
+https://dados.gov.br/dados/conjuntos-dados/comunicacoes-de-acidente-de-trabalho-cat-plano-de-dados-abertos-jun-2023-a-jun-2025
 
 Coloque os arquivos em uma pasta chamada `entrada`, dentro da pasta de trabalho. Os arquivos não têm
 estrutura única: foram identificados 5 layouts (A, A2, B, C, D), e cada linha tem o layout reconhecido
@@ -63,7 +67,8 @@ Pasta de trabalho esperada:
 
 Execute os comandos na pasta dos scripts. Os caminhos padrão são relativos a essa pasta: os CSV da CAT em
 `entrada/` e os resultados em `saida/`. Para usar outros locais, indique `--pasta <caminho>` e `--saida
-<caminho>` no `gerar_base.py`, ou `--entrada` e `--saida` nos demais scripts.
+<caminho>` no `gerar_base.py`, ou `--entrada` e `--saida` nos demais scripts. No Windows, troque `python`
+por `py` se o comando `python` não for reconhecido.
 
 ```
 python gerar_base.py                    # 1. limpeza, base do Nordeste e CSV
@@ -73,18 +78,27 @@ python modelo_arvore_decisao.py         # 4. Árvore de Decisão
 python modelo_xgboost.py                # 5. XGBoost
 python comparar_modelos.py              # 6. Comparação dos quatro algoritmos
 python analise_descritiva.py            # 7. Análise descritiva
+python analises_complementares.py       # 8. Análises complementares (depois dos passos 2 a 6)
 ```
 
-Cada script de modelo aceita `--rapido` para um teste curto (os resultados desse modo não servem para
-o trabalho) e `--sem-tuning` para pular a busca de hiperparâmetros. As sementes aleatórias são fixas (42).
-O treinamento completo é demorado; use `--rapido` para conferir se o ambiente está funcionando.
+Cada script de modelo aceita `--rapido` para um teste curto e `--sem-tuning` para pular a busca de
+hiperparâmetros. Os resultados do `--rapido` **não servem para o trabalho** e ficam gravados na mesma pasta
+dos resultados completos: depois de um teste rápido, rode de novo os passos 2 a 5 sem a opção. As sementes
+aleatórias são fixas (42).
+
+O `analises_complementares.py` lê os hiperparâmetros e as matrizes de confusão gravados pelos scripts de
+modelo, por isso deve rodar depois deles. Aceita `--parte descritiva` (só tabelas e figuras, sem treino)
+ou `--parte modelos` (sensibilidade com o Random Forest: meses regulares, divisão alternativa, blocos de
+variáveis, registros com dado ausente, permutação por blocos, intervalos de confiança e checagem do óbito).
 
 Saídas, dentro de `saida/`:
 
 - `base_nordeste.*`: base final (parquet e CSV) e `amostra_1000.csv`;
 - `modelos/<algoritmo>/`: métricas, matrizes de confusão, importância das variáveis e coeficientes;
 - `modelos/comparativo_algoritmos.csv` e gráficos comparativos;
-- `descritiva/`: tabelas e gráficos da análise descritiva.
+- `descritiva/`: tabelas e gráficos da análise descritiva;
+- `complementar/`: tabelas, figuras e logs das análises complementares;
+- `dicionario_rotulos.csv` e `removidos_por_ausencia.csv`: rótulos completos da fonte e registros excluídos.
 
 ## Filtros aplicados (e quantos registros cada um afeta)
 
@@ -92,7 +106,8 @@ Saídas, dentro de `saida/`:
 2. Remoção de linhas duplicadas na base nacional: 522.466.
 3. Localização: a UF do acidente **não é usada** (rótulos trocados na fonte: entre 94,5% e 99,2% dos
    registros de cada rótulo apontam para uma única UF de empregador diferente, e a coincidência entre as
-   duas UF não passa de 0,05%). O recorte do Nordeste usa a **UF do empregador** (dois primeiros dígitos
+   duas UF não passa de 0,05%). A correspondência entre rótulo e UF é a mesma nos cinco layouts, mas não
+   recupera todas as UFs, por isso a coluna foi descartada. O recorte do Nordeste usa a **UF do empregador** (dois primeiros dígitos
    do código IBGE do município): MA, PI, CE, RN, PB, PE, AL, SE e BA.
 4. Colunas descartadas: UF do acidente, CNPJ, tipo do empregador, datas de despacho do benefício e de
    afastamento, espécie do benefício, origem do cadastro e filiação do segurado.
@@ -163,7 +178,8 @@ Base final: **231.054 linhas x 31 colunas**, 73 meses de ocorrência (71 entre j
   modelo e de `--corte`. O modelo de exemplo de `montar_base_ne.py` e a sensibilidade de
   `analise_dezembro.py` usam `2023-02`; eles servem só para a análise de dezembro e não entram nos
   resultados dos algoritmos.
-- **Hiperparâmetros:** busca aleatória com validação cruzada temporal (3 divisões) só no treino.
+- **Hiperparâmetros:** busca aleatória de 8 combinações com validação cruzada temporal (3 divisões), numa
+  amostra de 40.000 registros do treino; classes com pesos inversamente proporcionais à frequência.
 
 ## Limitações da base (resumo)
 
@@ -173,9 +189,12 @@ Base final: **231.054 linhas x 31 colunas**, 73 meses de ocorrência (71 entre j
 - Os arquivos trazem praticamente só CATs emitidas no ano do acidente; dezembro e o último mês ficam
   incompletos, e a cobertura mensal é irregular.
 - A remoção por dado faltante foi desigual (20,1% em 2021 e 19,8% em 2022, 1,8% e 1,3% em 2024 e 2025).
-- Rótulos de agente causador, natureza da lesão e parte do corpo vêm truncados em 20 caracteres
-  (`dicionario_rotulos.csv` traz o rótulo completo mais longo visto na fonte).
+- Rótulos de agente causador, natureza da lesão e parte do corpo vêm truncados em 20 caracteres, e a fonte
+  não traz os códigos desses campos. Em 14 dos 270 rótulos de agente causador o corte junta descrições
+  diferentes (`dicionario_rotulos.csv` traz o rótulo completo mais longo visto na fonte).
+- O município do empregador pode ser o da sede, e não o do estabelecimento onde ocorreu o acidente.
 
 ## Licença
 
-Código sob licença MIT. Os dados pertencem ao INSS e seguem os termos do Portal de Dados Abertos.
+Código sob licença MIT (arquivo `LICENSE`). Os dados pertencem ao INSS e seguem os termos do Portal
+Brasileiro de Dados Abertos.
